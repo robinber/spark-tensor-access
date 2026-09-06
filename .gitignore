@@ -1,0 +1,28 @@
+# Local scratch, generated corpora, and incidental run outputs
+/work/
+/data/
+/results/local/
+*.log
+
+# Rust build outputs; keep Cargo.lock when the package is introduced
+target/
+
+# Python and Mojo local environments/build caches
+.venv/
+.pixi/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.mojopkg
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Editor and OS files
+.DS_Store
+.idea/
+*.swp
