@@ -1,0 +1,12 @@
+[workspace]
+name = "bringup"
+channels = ["https://conda.modular.com/max", "conda-forge"]
+platforms = ["linux-aarch64"]
+version = "0.1.0"
+
+[dependencies]
+mojo = "==1.0.0"
+max = "==26.5.0"
+
+[tasks]
+square = "mojo run square.mojo"

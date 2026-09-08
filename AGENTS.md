@@ -15,9 +15,13 @@ symlink. The submodule is pinned to upstream `v1.4.0`, commit
 
 ## Current repository state
 
-This is a documentation bootstrap. There is no Cargo package, Rust MSRV,
-Mojo environment lock, kernel, benchmark executable, or CI matrix yet.
-Do not invent commands or describe planned behavior as implemented.
+The repository holds the experiment specification and one validated
+bring-up program. `bringup/` is a pixi workspace locked for `linux-aarch64`
+(Mojo 1.0.0, MAX 26.5.0) containing `square.mojo`, an element-wise GPU kernel
+that was executed on the Spark GPU and checked on the CPU; `bringup/README.md`
+records the environment and run evidence. There is no Cargo package, Rust
+MSRV, experiment kernel, benchmark executable, or CI matrix yet. Do not
+invent commands or describe planned behavior as implemented.
 
 Before adding the first Rust utility, define its smallest useful interface,
 one package, edition, declared MSRV, and execution toolchain. A Cargo package
@@ -55,10 +59,12 @@ experiment artifacts with documented provenance.
 
 ## Verification
 
-For this documentation bootstrap, review changed content, relative links,
-skill pin and symlink resolution, and `git diff --check`. Cargo, rustdoc, and
-GPU execution checks are not applicable until their corresponding code exists.
-Do not introduce CI solely to claim a passing badge.
+Review changed content, relative links, skill pin and symlink resolution,
+and `git diff --check`. For `bringup/`, the only meaningful check is
+`pixi run square` on the Spark itself; a host without the GPU cannot validate
+it, and `pixi.lock` must stay consistent with `pixi.toml`. Cargo and rustdoc
+checks are not applicable until Rust code exists. Do not introduce CI solely
+to claim a passing badge.
 
 Once Rust code exists, follow the skill's task classification and scoped
 verification. When experimental code changes, add the numerical and timing

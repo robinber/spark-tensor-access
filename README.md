@@ -3,8 +3,11 @@
 A bounded experiment in selective tensor access on the NVIDIA DGX Spark,
 using Mojo for GPU kernels and Rust for small data and validation tools.
 
-**Status: experiment specification only.** No kernels, Cargo package,
-performance results, or validated Spark environment are included yet.
+**Status: bring-up validated, experiment not started.** One minimal Mojo
+GPU kernel has been executed on the Spark and checked on the CPU; see
+[bringup/README.md](bringup/README.md) for the procedure, environment record,
+and run evidence. No experiment kernels, Cargo package, or performance results
+exist yet.
 
 ## The question
 
@@ -31,17 +34,17 @@ target for examining actual allocation, layout, copy, and synchronization
 costs. It must not be modeled as independent host RAM and discrete GPU VRAM
 pools. See NVIDIA's [system overview][spark] and [CUDA porting notes][cuda].
 
-Mojo lists the Spark as a known-compatible target. The first implementation
-step is to validate the current toolchain on the actual machine; documentation
-support is not a completed local compatibility test. See the
-[Mojo requirements][mojo].
+Mojo lists the Spark as a known-compatible target. That claim was checked on
+the actual machine on 2026-09-08 with Mojo 1.0.0 and MAX 26.5.0, using the
+element-wise kernel in [bringup/](bringup/README.md). Other versions are not
+covered by that check. See the [Mojo requirements][mojo].
 
 ## What we will build
 
 | Tool | Intended role |
 | --- | --- |
 | Rust | Deterministic corpus generation, input validation, and small experiment/result utilities |
-| Mojo | GPU kernels and their immediate execution and timing code |
+| Mojo | GPU kernels and their immediate execution and timing code; the bring-up kernel lives in `bringup/` as a pixi workspace |
 | Python, where useful | Independent numerical reference and a few plots |
 
 Start with separate executables and a small manifest/file interface. A single
@@ -58,7 +61,7 @@ four weeks at two lab days per week. Shorten familiar steps.
 
 | Stage | Evidence |
 | --- | --- |
-| Bring-up, at most two sessions | One independently checked GPU example and a recorded environment; otherwise document the blocker and reconsider the environment |
+| Bring-up, at most two sessions | Done in one session: one independently checked GPU example and a recorded environment, in [bringup/](bringup/README.md) |
 | First comparison, by the end of week two | Two correct variants with packing included and one provisional measurement |
 | Bounded campaign | A fixed, small matrix, raw repeated observations, and profiling of the important differences |
 | Conclusion | A reproducible report, explicit limits, and an explanation of what changed in our understanding |

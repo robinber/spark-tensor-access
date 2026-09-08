@@ -1,7 +1,9 @@
 # Experiment: direct versus packed tensor-block access
 
-This document specifies a planned experiment. No performance measurements or
-target-runtime validation have been completed.
+This document specifies a planned experiment. No performance measurements
+have been completed. The only target-runtime validation so far is the
+bring-up kernel in [bringup/README.md](../bringup/README.md), which is not
+part of this comparison.
 
 ## Hypothesis
 
