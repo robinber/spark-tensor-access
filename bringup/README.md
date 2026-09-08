@@ -79,10 +79,29 @@ omitted.
 
 ## Validation evidence
 
-See the run transcript below, recorded from the documented command on the
-Spark at the stated revision. Nothing here was run on a CPU-only host.
+The transcript below was recorded on the Spark on 2026-09-08 from a fresh
+clone of revision `8a179a54c03c047fd107c1fc64c3eff1031e8866` with a clean
+working tree, using exactly the commands above. Nothing here was run on a
+CPU-only host.
 
-_Pending: filled in by the evidence commit after the code commit is pushed._
+```text
+$ pixi install --locked
+✔ The default environment has been installed.
+$ pixi run square
+✨ Pixi task (square): mojo run square.mojo
+device: NVIDIA GB10 api: cuda
+input HostBuffer([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0])
+N = 8 output HostBuffer([9.0, 4.0, 1.0, 0.0, 1.0, 4.0, 9.0, 16.0]) failures 0
+N = 6 output HostBuffer([9.0, 4.0, 1.0, 0.0, 1.0, 4.0, -1.0, -1.0]) failures 0
+PASS
+$ echo $?
+0
+```
+
+The failure path was exercised at the same revision by running a temporary
+copy of `square.mojo` whose CPU expectation was shifted by one. That copy
+printed one mismatch line per affected element, reported `FAIL`, and exited
+with status 1. The copy was not committed.
 
 ## What this does and does not establish
 
