@@ -1,9 +1,10 @@
 # Experiment: direct versus packed tensor-block access
 
 This document specifies a planned experiment. No performance measurements
-have been completed. The only target-runtime validation so far is the
-bring-up kernel in [bringup/README.md](../bringup/README.md), which is not
-part of this comparison.
+have been completed. Target-runtime validation so far covers the bring-up
+kernel and a fixture-level correctness baseline for variant A, both in
+[bringup/README.md](../bringup/README.md). Variant B, the generated corpus,
+the manifest, and all timing remain unimplemented.
 
 ## Hypothesis
 

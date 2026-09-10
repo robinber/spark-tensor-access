@@ -10,3 +10,4 @@ max = "==26.5.0"
 
 [tasks]
 square = "mojo run square.mojo"
+direct-sum = "mojo run direct_sum.mojo"

@@ -3,10 +3,12 @@
 A bounded experiment in selective tensor access on the NVIDIA DGX Spark,
 using Mojo for GPU kernels and Rust for small data and validation tools.
 
-**Status: bring-up validated, experiment not started.** One minimal Mojo
-GPU kernel has been executed on the Spark and checked on the CPU; see
+**Status: bring-up validated, variant A correctness baseline in place, no
+measurements.** Two small Mojo GPU programs have been executed on the Spark
+and checked on the CPU: an element-wise square and a direct sum of squares per
+selected block read in place from the source. See
 [bringup/README.md](bringup/README.md) for the procedure, environment record,
-and run evidence. No experiment kernels, Cargo package, or performance results
+and run evidence. No packed variant, Cargo package, or performance results
 exist yet.
 
 ## The question
@@ -44,7 +46,7 @@ covered by that check. See the [Mojo requirements][mojo].
 | Tool | Intended role |
 | --- | --- |
 | Rust | Deterministic corpus generation, input validation, and small experiment/result utilities |
-| Mojo | GPU kernels and their immediate execution and timing code; the bring-up kernel lives in `bringup/` as a pixi workspace |
+| Mojo | GPU kernels and their immediate execution and timing code; the bring-up and baseline kernels live in `bringup/` as a pixi workspace |
 | Python, where useful | Independent numerical reference and a few plots |
 
 Start with separate executables and a small manifest/file interface. A single
@@ -62,7 +64,7 @@ four weeks at two lab days per week. Shorten familiar steps.
 | Stage | Evidence |
 | --- | --- |
 | Bring-up, at most two sessions | Done in one session: one independently checked GPU example and a recorded environment, in [bringup/](bringup/README.md) |
-| First comparison, by the end of week two | Two correct variants with packing included and one provisional measurement |
+| First comparison, by the end of week two | Two correct variants with packing included and one provisional measurement. Variant A's fixture-level correctness baseline is done in [bringup/](bringup/README.md); variant B and measurement are not |
 | Bounded campaign | A fixed, small matrix, raw repeated observations, and profiling of the important differences |
 | Conclusion | A reproducible report, explicit limits, and an explanation of what changed in our understanding |
 

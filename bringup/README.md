@@ -1,4 +1,17 @@
-# GPU bring-up: element-wise square on the DGX Spark
+# GPU bring-up on the DGX Spark
+
+This directory is one pixi workspace with two small Mojo programs that run on
+the Spark GPU and check themselves on the CPU:
+
+| Task | Program | Purpose |
+| --- | --- | --- |
+| `pixi run square` | `square.mojo` | Element-wise square: index mapping, bounds guard, launch, synchronization |
+| `pixi run direct-sum` | `direct_sum.mojo` | Variant A baseline: one sum of squares per selected block, read directly from the source |
+
+Both share the install procedure and environment record below. Neither
+measures anything.
+
+## Element-wise square
 
 `square.mojo` is the first program executed on the Spark GPU for this project.
 It computes `output[i] = input[i] * input[i]` with one GPU thread per element
@@ -30,6 +43,38 @@ Comparison uses exact numerical equality. That is appropriate for these
 deliberately small exact cases only and does not define the tolerance policy
 of the later reduction experiment.
 
+## Direct sum of squares per selected block
+
+`direct_sum.mojo` is the first correctness baseline for variant A in
+[docs/experiment.md](../docs/experiment.md). It assigns one GPU thread to each
+position of a selection list, and that thread reads its block straight from
+the shared source allocation. Nothing is packed.
+
+- The source is one read-only allocation of three contiguous blocks of three
+  FP32 values: `[1, 2, 3]`, `[-1, 0, 2]`, `[2, 3, 4]`. Element `j` of block
+  `b` lives at offset `b * 3 + j`.
+- Each case launches one block of eight threads for a three-entry selection.
+  Thread `i` guards `i < selection_count` before touching the selection or
+  the output, reads its block ID, starts a private FP32 accumulator at zero,
+  walks the block's three elements adding each square, and writes the total
+  at position `i`. Threads never share an accumulator, so there is no
+  cooperative reduction or atomic.
+- Selection `[0, 1, 2]` expects `[14, 5, 29]`; selection `[2, 0, 2]` expects
+  `[29, 14, 29]`, preserving order and the duplicate.
+- The eight-element output is reset to `-1` before each case and positions
+  3 through 7 are checked to remain `-1`.
+- The host recomputes every selected total with FP64 accumulation and
+  compares it both against the fixed expectation and against the GPU value,
+  after the device-to-host copy and `ctx.synchronize()`.
+- Block IDs are validated on the host before any GPU work. The program feeds
+  itself `[0, -1, 2]` and `[3, 1, 0]` and requires both to be rejected; a
+  validator that accepts them makes the run fail.
+- Any problem exits with status 1. Without an accelerator it exits with 2.
+
+Exact equality is declared for this fixture because every intermediate sum
+is a small integer, exactly representable in FP32. It is not the tolerance
+policy for larger or arbitrary-valued inputs.
+
 ## Install and run on the Spark
 
 The environment is a [pixi](https://pixi.sh) workspace pinned by `pixi.lock`
@@ -43,9 +88,10 @@ pixi install --locked
 pixi run square
 ```
 
-`pixi run square` compiles and runs `square.mojo` inside the locked
-environment. A successful run prints the runtime-selected device, the input,
-both case outputs, and `PASS`, and exits with status 0.
+`pixi run square` and `pixi run direct-sum` each compile and run their
+program inside the locked environment. A successful run prints the
+runtime-selected device, the inputs, each case's output, and `PASS`, and exits
+with status 0.
 
 `pixi install --locked` fails instead of re-solving if `pixi.toml` and
 `pixi.lock` disagree. Regenerate the lock with `pixi install` only as a
@@ -77,7 +123,7 @@ omitted.
 | Python in environment | 3.12.14 from conda-forge |
 | Selected device at runtime | `NVIDIA GB10`, API `cuda` |
 
-## Validation evidence
+## Validation evidence: square
 
 The transcript below was recorded on the Spark on 2026-09-08 from a fresh
 clone of revision `8a179a54c03c047fd107c1fc64c3eff1031e8866` with a clean
@@ -103,12 +149,20 @@ copy of `square.mojo` whose CPU expectation was shifted by one. That copy
 printed one mismatch line per affected element, reported `FAIL`, and exited
 with status 1. The copy was not committed.
 
+## Validation evidence: direct-sum
+
+_Pending: filled in by the evidence commit after the code commit is pushed._
+
 ## What this does and does not establish
 
-It establishes that the pinned Mojo 1.0.0 and MAX 26.5.0 packages compile a
-kernel for the GB10, launch it through the CUDA API, and return correct
-results to the CPU for the two cases above.
+The square run establishes that the pinned Mojo 1.0.0 and MAX 26.5.0
+packages compile a kernel for the GB10, launch it through the CUDA API, and
+return correct results to the CPU. The direct-sum run establishes that a
+per-thread serial reduction over blocks read in place from a shared source
+allocation is correct for the fixture above, including duplicate selections
+and host-side rejection of invalid IDs.
 
-It does not establish performance, packing behavior, reduction accuracy, or
-compatibility of any other Mojo or MAX version. Those remain for the
-experiment in [docs/experiment.md](../docs/experiment.md).
+Neither establishes performance, packing behavior, the numerical tolerance
+of larger reductions, parallel reduction within a block, or compatibility of
+any other Mojo or MAX version. Those remain for the experiment in
+[docs/experiment.md](../docs/experiment.md).
