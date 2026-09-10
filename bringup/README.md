@@ -151,7 +151,33 @@ with status 1. The copy was not committed.
 
 ## Validation evidence: direct-sum
 
-_Pending: filled in by the evidence commit after the code commit is pushed._
+The transcript below was recorded on the Spark on 2026-09-10 from a fresh
+clone of revision `c67f206e0ef4f71365ef8a1c765ee981e5e0d020` with a clean
+working tree, using exactly the commands above. The environment matched the
+record above: NVIDIA GB10, driver 580.173.02, mojo 1.0.0, max 26.5.0.
+`pixi run square` still passed in the same clone.
+
+```text
+$ pixi install --locked
+✔ The default environment has been installed.
+$ pixi run direct-sum
+✨ Pixi task (direct-sum): mojo run direct_sum.mojo
+device: NVIDIA GB10 api: cuda
+source HostBuffer([1.0, 2.0, 3.0, -1.0, 0.0, 2.0, 2.0, 3.0, 4.0])
+selection [0, 1, 2] output HostBuffer([14.0, 5.0, 29.0, -1.0, -1.0, -1.0, -1.0, -1.0]) failures 0
+selection [2, 0, 2] output HostBuffer([29.0, 14.0, 29.0, -1.0, -1.0, -1.0, -1.0, -1.0]) failures 0
+selection [0, -1, 2] rejected before GPU work
+selection [3, 1, 0] rejected before GPU work
+PASS
+$ echo $?
+0
+```
+
+Two failure paths were exercised at the same revision on temporary,
+uncommitted copies of `direct_sum.mojo`. Shifting the GPU expectation by one
+reported a mismatch for every element and exited with status 1. Making the
+validator accept every ID reported both invalid selections as wrongly
+accepted and exited with status 1.
 
 ## What this does and does not establish
 
